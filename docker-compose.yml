@@ -1,11 +1,13 @@
 version: "3.9"
 services:
   app:
+    container_name: app
     build: ./infra/php
     volumes:
       - ./src:/data
 
   web:
+    container_name: webserver
     image: nginx:1.20-alpine
     ports:
       - 8080:80
@@ -15,9 +17,17 @@ services:
     working_dir: /data
   
   db:
+    container_name: db
     build: ./infra/mysql
+    environment:
+        MYSQL_ROOT_PASSWORD: secret
+        MYSQL_DATABASE: laravel
+        MYSQL_USER: phper
+        MYSQL_PASSWORD: secret
+    ports: 
+        - "4306:3306"    
     volumes:
-      - db-store:/var/lib/mysql
+        - db-store:/var/lib/mysql
 
 volumes:
   db-store:
