@@ -6,6 +6,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\Task;
 
+use function PHPUnit\Framework\assertSame;
+
 class TaskTest extends TestCase
 {
     use RefreshDatabase;
@@ -21,5 +23,51 @@ class TaskTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonCount($tasks->count());
+    }
+
+    /**
+     * @test
+     */
+    public function TaskCreate()
+    {
+        $data = [
+            'title' => 'test'
+        ];
+
+        $response = $this->postJson('/api/tasks', $data);
+        
+        $response 
+            ->assertCreated()
+            ->assertJsonFragment($data);
+    }
+
+    /**
+     * @test
+     */
+    public function TaskUpdate()
+    {
+        $task = Task::factory()->create();
+
+        $task->title = 'update';
+
+        $response = $this->patchJson('/api/tasks/'. $task->id, $task->toArray());
+        
+        $response 
+            ->assertOK()
+            ->assertJsonFragment($task->toArray());
+    }
+
+    /**
+     * @test
+     */
+    public function TaskDelete()
+    {
+        $tasks = Task::factory()->count(10)->create();
+
+        $response = $this->deleteJson('/api/tasks/'. $tasks->first()->id);
+        $response->assertOK();
+
+        $response = $this->getJson('/api/tasks');
+        $response->assertJsonCount($tasks->count() - 1);
     }
 }
